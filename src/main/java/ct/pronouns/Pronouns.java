@@ -42,10 +42,10 @@ public class Pronouns {
             }
             pData.pronouns("");
             table.updatePlayerData(pData);
-            return "Cleared Pronouns";
+            return "Your pronouns have been cleared";
         }
         if (!validatePronoun(pronoun)) {
-            return "Invalid pronouns.";
+            return "The pronouns that you provided are not settable by everyone. Please contact staff if you want these to be added manually.";
         }
         Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun+"]");
         PlayerTable table = CtServer.getInstance().playerTable();
@@ -55,13 +55,13 @@ public class Pronouns {
         }
         pData.pronouns(pronoun);
         table.updatePlayerData(pData);
-        return "Changed Pronouns";
+        return "Your pronouns have been updated";
 
     }
     public static String setPronouns(ServerCommandSource player,String pronoun1, String pronoun2) {
         LOGGER.info("Pronouns2 command called");
         if (!validatePronoun(pronoun1) || !validatePronoun(pronoun2)) {
-            return "Invalid pronouns.";
+            return "The pronouns that you provided are not settable by everyone. Please contact staff if you want these to be added manually.";
         }
         Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun1+"/"+pronoun2+"]");
         PlayerTable table = CtServer.getInstance().playerTable();
@@ -71,7 +71,7 @@ public class Pronouns {
         }
         pData.pronouns(pronoun1 + "/" + pronoun2);
         table.updatePlayerData(pData);
-        return "Changed Pronouns";
+        return "Your pronouns have been updated";
     }
 
     public static String getPronouns(UUID player) {
