@@ -63,7 +63,7 @@ public class Pronouns {
         if (!validatePronoun(pronoun1) || !validatePronoun(pronoun2)) {
             return "The pronouns that you provided are not settable by everyone. Please contact staff if you want these to be added manually.";
         }
-        Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun1+"/"+pronoun2+"]");
+        Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), "&7[&r"+pronoun1+"/"+pronoun2+"&7]&r");
         PlayerTable table = CtServer.getInstance().playerTable();
         PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
         if (pData == null) {
