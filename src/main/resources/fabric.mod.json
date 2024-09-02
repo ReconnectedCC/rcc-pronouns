@@ -1,31 +1,31 @@
 {
 	"schemaVersion": 1,
-	"id": "ct-pronouns",
+	"id": "rcc-pronouns",
 	"version": "${version}",
-	"name": "ct-pronouns",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "rcc-pronouns",
+	"description": "This mod adds pronouns to the server ReconnectedCC.",
 	"authors": [
-		"Me!"
+		"Dimaguy"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
-	"icon": "assets/ct-pronouns/icon.png",
+	"license": "MIT",
+	"icon": "assets/rcc-pronouns/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"ct.pronouns.Ctpronouns"
+			"cc.reconnected.pronouns.RCCPronouns"
 		]
 	},
 	"mixins": [
-		"ct-pronouns.mixins.json"
+		"rcc-pronouns.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.21",
-		"java": ">=21",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
 		"fabric-api": "*",
 		"tab": ">=4.1.6"
 	},

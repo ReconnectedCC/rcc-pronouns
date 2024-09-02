@@ -1,11 +1,9 @@
-package ct.pronouns;
+package cc.reconnected.pronouns;
 
-import ct.server.CtServer;
-import ct.server.database.PlayerData;
-import ct.server.database.PlayerTable;
+import cc.reconnected.server.RccServer;
+import cc.reconnected.server.database.PlayerData;
+import cc.reconnected.server.database.PlayerTable;
 import me.neznamy.tab.api.TabAPI;
-import me.neznamy.tab.api.TabPlayer;
-import me.neznamy.tab.api.event.player.PlayerLoadEvent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import org.slf4j.Logger;
@@ -16,9 +14,30 @@ import java.util.regex.Pattern;
 
 public class Pronouns {
     static MinecraftServer server;
-    static Logger LOGGER = LoggerFactory.getLogger("ct-pronouns");
+    static Logger LOGGER = LoggerFactory.getLogger("rcc-pronouns");
     public static void onServerStart(MinecraftServer server) {
         Pronouns.server = server;
+        TabAPI.getInstance().getPlaceholderManager().registerPlayerPlaceholder("%pronoun1%",500, (player) -> {
+            if (player == null) {
+                return "";
+            }
+            String pronouns = Pronouns.getPronouns(player.getUniqueId());
+            if (pronouns == null) {
+                return "";
+            }
+            return pronouns.split("(\\s|,|/)", 2)[0];
+        });
+        TabAPI.getInstance().getPlaceholderManager().registerPlayerPlaceholder("%pronoun2%",500, (player) -> {
+            if (player == null) {
+                return "";
+            }
+            String pronouns = Pronouns.getPronouns(player.getUniqueId());
+            if (pronouns == null) {
+                return "";
+            }
+            return pronouns.split("(\\s|,|/)", 2)[1];
+        });
+        /*
         Objects.requireNonNull(TabAPI.getInstance().getEventBus()).register(PlayerLoadEvent.class, event -> {
             TabPlayer tabPlayer = event.getPlayer();
             String pronouns = Pronouns.getPronouns(tabPlayer.getUniqueId());
@@ -27,15 +46,15 @@ public class Pronouns {
             }
             Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(tabPlayer, " ["+pronouns+"]");
     });
+        */
     }
     public static Boolean validatePronoun(String pronoun) {
         return Pattern.matches("^(he|him|she|her|it|its|they|them|any|ask|avoid|other)$", pronoun);
     }
     public static String setPronouns(ServerCommandSource player,String pronoun) {
-        LOGGER.info("Pronouns command called");
         if (Objects.equals(pronoun, "clear")) {
-            Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), "");
-            PlayerTable table = CtServer.getInstance().playerTable();
+            //Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), "");
+            PlayerTable table = RccServer.getInstance().playerTable();
             PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
             if (pData == null) {
                 return "Warning: Player Data Missing, this change will not survive a server restart.";
@@ -47,27 +66,26 @@ public class Pronouns {
         if (!validatePronoun(pronoun)) {
             return "Invalid pronouns.";
         }
-        Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun+"]");
-        PlayerTable table = CtServer.getInstance().playerTable();
+        //Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun+"]");
+        PlayerTable table = RccServer.getInstance().playerTable();
         PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
         if (pData == null) {
-            return "Warning: Player Data Missing, this change will not survive a server restart.";
+            return "Error: Player Data Missing. Try again later.";
         }
-        pData.pronouns(pronoun);
+        pData.pronouns(pronoun+",");
         table.updatePlayerData(pData);
         return "Changed Pronouns";
 
     }
     public static String setPronouns(ServerCommandSource player,String pronoun1, String pronoun2) {
-        LOGGER.info("Pronouns2 command called");
         if (!validatePronoun(pronoun1) || !validatePronoun(pronoun2)) {
             return "Invalid pronouns.";
         }
-        Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun1+"/"+pronoun2+"]");
-        PlayerTable table = CtServer.getInstance().playerTable();
+        //Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun1+"/"+pronoun2+"]");
+        PlayerTable table = RccServer.getInstance().playerTable();
         PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
         if (pData == null) {
-            return "Warning: Player Data Missing, this change will not survive a server restart.";
+            return "Error: Player Data Missing. Try again later.";
         }
         pData.pronouns(pronoun1 + "/" + pronoun2);
         table.updatePlayerData(pData);
@@ -75,10 +93,13 @@ public class Pronouns {
     }
 
     public static String getPronouns(UUID player) {
-        PlayerTable table = CtServer.getInstance().playerTable();
+        PlayerTable table = RccServer.getInstance().playerTable();
         PlayerData pData = table.getPlayerData(player);
         if (pData == null) {
             return null;
+        }
+        if (pData.pronouns().isBlank()) {
+            return ",";
         }
         return pData.pronouns();
     }
