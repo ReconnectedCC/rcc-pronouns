@@ -2,7 +2,6 @@ package cc.reconnected.pronouns;
 
 import cc.reconnected.server.RccServer;
 import cc.reconnected.server.database.PlayerData;
-import cc.reconnected.server.database.PlayerTable;
 import me.neznamy.tab.api.TabAPI;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -18,11 +17,8 @@ public class Pronouns {
     public static void onServerStart(MinecraftServer server) {
         Pronouns.server = server;
         TabAPI.getInstance().getPlaceholderManager().registerPlayerPlaceholder("%pronoun1%",500, (player) -> {
-            if (player == null) {
-                return "";
-            }
             String pronouns = Pronouns.getPronouns(player.getUniqueId());
-            if (pronouns == null) {
+            if (pronouns.isBlank()) {
                 return "";
             }
             return pronouns.split("(\\s|,|/)", 2)[0];
@@ -32,7 +28,7 @@ public class Pronouns {
                 return "";
             }
             String pronouns = Pronouns.getPronouns(player.getUniqueId());
-            if (pronouns == null) {
+            if (pronouns.isBlank()) {
                 return "";
             }
             return pronouns.split("(\\s|,|/)", 2)[1];
@@ -52,55 +48,39 @@ public class Pronouns {
         return Pattern.matches("^(he|him|she|her|it|its|they|them|any|ask|avoid|other)$", pronoun);
     }
     public static String setPronouns(ServerCommandSource player,String pronoun) {
+        if (!player.isExecutedByPlayer()) return "This command can only be run by a player.";
         if (Objects.equals(pronoun, "clear")) {
             //Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), "");
-            PlayerTable table = RccServer.getInstance().playerTable();
-            PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
-            if (pData == null) {
-                return "Warning: Player Data Missing, this change will not survive a server restart.";
-            }
-            pData.pronouns("");
-            table.updatePlayerData(pData);
+            PlayerData pData = PlayerData.getPlayer(Objects.requireNonNull(player.getPlayer()).getUuid());
+            pData.set(PlayerData.KEYS.pronouns,"");
             return "Cleared Pronouns";
         }
         if (!validatePronoun(pronoun)) {
             return "Invalid pronouns.";
         }
         //Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun+"]");
-        PlayerTable table = RccServer.getInstance().playerTable();
-        PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
-        if (pData == null) {
-            return "Error: Player Data Missing. Try again later.";
-        }
-        pData.pronouns(pronoun+",");
-        table.updatePlayerData(pData);
+        PlayerData pData = PlayerData.getPlayer(Objects.requireNonNull(player.getPlayer()).getUuid());
+        pData.set(PlayerData.KEYS.pronouns,pronoun+",");
         return "Changed Pronouns";
 
     }
     public static String setPronouns(ServerCommandSource player,String pronoun1, String pronoun2) {
+        if (!player.isExecutedByPlayer()) return "This command can only be run by a player.";
         if (!validatePronoun(pronoun1) || !validatePronoun(pronoun2)) {
             return "Invalid pronouns.";
         }
         //Objects.requireNonNull(TabAPI.getInstance().getTabListFormatManager()).setSuffix(TabAPI.getInstance().getPlayer(player.getName()), " ["+pronoun1+"/"+pronoun2+"]");
-        PlayerTable table = RccServer.getInstance().playerTable();
-        PlayerData pData = table.getPlayerData(Objects.requireNonNull(player.getPlayer()).getUuid());
-        if (pData == null) {
-            return "Error: Player Data Missing. Try again later.";
-        }
-        pData.pronouns(pronoun1 + "/" + pronoun2);
-        table.updatePlayerData(pData);
+        PlayerData pData = PlayerData.getPlayer(Objects.requireNonNull(player.getPlayer()).getUuid());
+        pData.set(PlayerData.KEYS.pronouns,pronoun1 + "/" + pronoun2);
         return "Changed Pronouns";
     }
 
     public static String getPronouns(UUID player) {
-        PlayerTable table = RccServer.getInstance().playerTable();
-        PlayerData pData = table.getPlayerData(player);
-        if (pData == null) {
-            return null;
-        }
-        if (pData.pronouns().isBlank()) {
+        PlayerData pData = PlayerData.getPlayer(player);
+        String pronouns = pData.get(PlayerData.KEYS.pronouns);
+        if (pronouns == null || pronouns.isBlank()) {
             return ",";
         }
-        return pData.pronouns();
+        return pronouns;
     }
 }
